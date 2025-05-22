@@ -61,6 +61,28 @@ export async function createMeeting() {
   return response.data;
 }
 
+export async function addHardcodedRegistrants(meetingId) {
+  const zoomApi = await getZoomApiClient();
+
+  const registrants = [
+    { email: 'ana@example.com', first_name: 'Ana' },
+    { email: 'benito@example.com', first_name: 'Benito' },
+    { email: 'carla@example.com', first_name: 'Carla' }
+  ];
+
+  const results = [];
+
+  for (const registrant of registrants) {
+    try {
+      const res = await zoomApi.post(`/meetings/${meetingId}/registrants`, registrant);
+      results.push(res.data); // contains join_url and registrant_id
+    } catch (error) {
+      console.error(`❌ Error adding ${registrant.email}:`, error.response?.data || error.message);
+    }
+  }
+
+  return results;
+}
 
 // 4. Update meeting with alternative host
 export async function updateMeetingWithHost(meetingId, altHostEmail) {

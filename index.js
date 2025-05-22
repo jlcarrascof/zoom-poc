@@ -1,11 +1,17 @@
-import { createMeeting, updateMeetingWithHost } from './zoomService.js';
+import { createMeeting, addHardcodedRegistrants } from './zoomService.js';
 
 async function run() {
   try {
     const meeting = await createMeeting();
-    console.log('Create meeting response:', meeting);
+    console.log(meeting);
     console.log('✅ Meeting Created:', meeting.join_url);
-    console.log(`📧 Send this URL to participant: ${meeting.join_url}`);
+
+    const registrants = await addHardcodedRegistrants(meeting.id);
+    console.log('✅ Registrants added:', registrants.map(r => ({
+      name: r.first_name,
+      join_url: r.join_url
+    })));
+
   } catch (error) {
     console.error('❌ Error:', error.response?.data || error.message);
   }
