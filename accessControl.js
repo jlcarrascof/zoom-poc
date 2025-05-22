@@ -1,6 +1,7 @@
+// accessControl.js
 import { groups } from './groups.js';
 
-export function filterAllowedRegistrants(groupName, registrants) {
+export function isEmailAllowedForGroup(email, groupName) {
   const allowedEmails = groups[groupName] || [];
-  return registrants.filter(r => allowedEmails.includes(r.email));
+  return allowedEmails.includes(email);
 }

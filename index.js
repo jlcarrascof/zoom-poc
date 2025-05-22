@@ -1,12 +1,13 @@
-import { createMeeting, addHardcodedRegistrants } from './zoomService.js';
+import { createMeeting, addGroupRegistrants } from './zoomService.js';
 
 async function run() {
-  try {
-    const meeting = await createMeeting();
-    console.log(meeting);
-    console.log('✅ Meeting Created:', meeting.join_url);
+  const group = 'grupoA';
 
-    const registrants = await addHardcodedRegistrants(meeting.id);
+  try {
+    const meeting = await createMeeting(group);
+    console.log('📅 Meeting Created:', meeting.join_url);
+
+    const registrants = await addGroupRegistrants(meeting.id, group);
     console.log('✅ Registrants added:', registrants.map(r => ({
       name: r.first_name,
       join_url: r.join_url
