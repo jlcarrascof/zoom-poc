@@ -1,17 +1,20 @@
-import { createMeeting, addGroupRegistrants } from './zoomService.js';
+import { createMeeting } from './zoomService.js';
+import { groups } from './groups.js';
 
 async function run() {
   const group = 'grupoA';
+  const authorizedEmails = groups[group] || [];
 
   try {
     const meeting = await createMeeting(group);
-    console.log('📅 Meeting Created:', meeting.join_url);
+    console.log('📅 Meeting created for group: ', group);
+    console.log('🔗 Join URL:', meeting.join_url);
 
-    const registrants = await addGroupRegistrants(meeting.id, group);
-    console.log('✅ Registrants added:', registrants.map(r => ({
-      name: r.first_name,
-      join_url: r.join_url
-    })));
+    // Simulás enviar el enlace solo a usuarios autorizados
+    console.log('\n📤 Link sended only to these authorized users:');
+    authorizedEmails.forEach(email => {
+      console.log(`✅ ${email}: ${meeting.join_url}`);
+    });
 
   } catch (error) {
     console.error('❌ Error:', error.response?.data || error.message);

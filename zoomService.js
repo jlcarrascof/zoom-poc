@@ -1,6 +1,5 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
-import { filterAllowedRegistrants } from './accessControl.js';
 dotenv.config();
 
 const {
@@ -10,7 +9,7 @@ const {
   ZOOM_USER_ID
 } = process.env;
 
-// 1. Get access token
+// 1. Obtener token de acceso
 async function getAccessToken() {
   const credentials = Buffer.from(`${ZOOM_CLIENT_ID}:${ZOOM_CLIENT_SECRET}`).toString('base64');
   const response = await axios.post(
@@ -23,7 +22,7 @@ async function getAccessToken() {
   return response.data.access_token;
 }
 
-// 2. Create Zoom API instance
+// 2. Instancia de cliente Zoom API
 async function getZoomApiClient() {
   const accessToken = await getAccessToken();
   return axios.create({
@@ -35,56 +34,34 @@ async function getZoomApiClient() {
   });
 }
 
-// 3. Create a meeting
+// 3. Crear una reunión y devolver join_url general
 export async function createMeeting(groupName) {
   const zoomApi = await getZoomApiClient();
 
   const response = await zoomApi.post(`/users/${ZOOM_USER_ID}/meetings`, {
     topic: `Reunión Grupo ${groupName}`,
-    type: 2,
-    start_time: new Date(Date.now() + 3600000).toISOString(), // 1 hora después
+    type: 2, // reunión programada
+    start_time: new Date(Date.now() + 3600000).toISOString(), // en 1 hora
     duration: 30,
     timezone: 'UTC',
     settings: {
       host_video: true,
       participant_video: true,
-      approval_type: 0,
+      approval_type: 0, // auto-aprobación (sin registrants)
       registration_type: 1,
-      registrants_email_notification: true
+      registrants_email_notification: false
     }
   });
 
-  return response.data;
+  // Solo nos interesa el link general
+  return {
+    join_url: response.data.join_url,
+    meeting_id: response.data.id,
+    start_time: response.data.start_time
+  };
 }
 
-// 4. Add only allowed registrants
-export async function addGroupRegistrants(meetingId, groupName) {
-  const zoomApi = await getZoomApiClient();
-
-  // Hardcoded example list (can be dynamic later)
-  const allPotentialRegistrants = [
-    { email: 'ana@example.com', first_name: 'Ana' },
-    { email: 'benito@example.com', first_name: 'Benito' },
-    { email: 'carla@example.com', first_name: 'Carla' },
-    { email: 'malito@example.com', first_name: 'Malito' } // no permitido
-  ];
-
-  const allowed = filterAllowedRegistrants(groupName, allPotentialRegistrants);
-  const results = [];
-
-  for (const registrant of allowed) {
-    try {
-      const res = await zoomApi.post(`/meetings/${meetingId}/registrants`, registrant);
-      results.push(res.data);
-    } catch (error) {
-      console.error(`❌ Error adding ${registrant.email}:`, error.response?.data || error.message);
-    }
-  }
-
-  return results;
-}
-
-// 5. Update meeting with alternative host
+// 4. Cambiar host alternativo
 export async function updateMeetingWithHost(meetingId, altHostEmail) {
   const zoomApi = await getZoomApiClient();
 
@@ -97,9 +74,9 @@ export async function updateMeetingWithHost(meetingId, altHostEmail) {
   return response.data;
 }
 
-// 6. Change the host of the meeting
+// 5. Reasignar el host de la reunión
 export async function changeMeetingHost(meetingId, newHostId) {
-  const zoomApi = await getZoomApiClientClient();
+  const zoomApi = await getZoomApiClient();
 
   const response = await zoomApi.patch(`/meetings/${meetingId}`, {
     schedule_for: newHostId
