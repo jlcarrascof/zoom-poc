@@ -70,3 +70,14 @@ export async function updateMeetingWithHost(meetingId, altHostEmail) {
 
   return response.data;
 }
+
+// 5. Change the host of the meeting
+export async function changeMeetingHost(meetingId, newHostId) {
+  const zoomApi = await getZoomApi();
+
+  const response = await zoomApi.patch(`/meetings/${meetingId}`, {
+    schedule_for: newHostId
+  });
+
+  return response.data;
+}
