@@ -9,7 +9,7 @@ const {
   ZOOM_USER_ID
 } = process.env;
 
-// 1. Obtener el token dinámico
+// 1. Get access token
 async function getAccessToken() {
   const credentials = Buffer.from(`${ZOOM_CLIENT_ID}:${ZOOM_CLIENT_SECRET}`).toString('base64');
 
@@ -26,7 +26,7 @@ async function getAccessToken() {
   return response.data.access_token;
 }
 
-// 2. Crear instancia de Zoom API con token válido
+// 2. Create Zoom API instance
 async function getZoomApi() {
   const accessToken = await getAccessToken();
 
@@ -39,7 +39,7 @@ async function getZoomApi() {
   });
 }
 
-// 3. Crear reunión
+// 3. Create a meeting
 export async function createMeeting() {
   const zoomApi = await getZoomApi();
 
@@ -58,7 +58,7 @@ export async function createMeeting() {
   return response.data;
 }
 
-// 4. Asignar anfitrión alternativo
+// 4. Update meeting with alternative host
 export async function updateMeetingWithHost(meetingId, altHostEmail) {
   const zoomApi = await getZoomApi();
 
